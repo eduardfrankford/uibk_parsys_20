@@ -11,7 +11,7 @@
 #$ -N latency
 
 # Redirect output stream to this file.
-#$ -o latency2onDifferentNodes.dat
+#$ -o test3.dat
 
 # Join the error stream to the output stream.
 #$ -j yes
@@ -20,6 +20,6 @@
 
 module load openmpi/4.0.3
 
-mpiexec -map-by node -n 2 /scratch/c703429/osu-benchmark/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_bw
+mpiexec --display-devel-map -n 2 /scratch/c703429/osu-benchmark/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_bw
 
-mpiexec -map-by node  -n 2 /scratch/c703429/osu-benchmark/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_latency
+mpiexec --display-devel-map -n 2 /scratch/c703429/osu-benchmark/libexec/osu-micro-benchmarks/mpi/pt2pt/osu_latency
