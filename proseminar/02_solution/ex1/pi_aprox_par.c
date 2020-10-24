@@ -25,13 +25,11 @@ int main(int argc, char *argv[])
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank); // get the rank of the caller
 
-    printf("Hello world from rank %d of %d\n", rank, size);
-
     double startTime = (float)clock() / CLOCKS_PER_SEC;
     srand(time(NULL) + rank);
     int i, count, n;
     double x, y, z, pi;
-    n = 500000000;
+    n = atoi(argv[1]);
 
     int partition_n = n / size;
 
@@ -52,16 +50,15 @@ int main(int argc, char *argv[])
     }
 
     MPI_Reduce(&count, &global_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-    printf("Local count: %d\n",count);
     if (rank == 0)
     {
         pi = (double)global_count / n * 4;
-        printf("Global count: %d\n", global_count);
-        printf("Approximate PI = %g\n", pi);
-    }
-    double endTime = (float)clock() / CLOCKS_PER_SEC;
+        printf("Parallel Version\n n=%d\n PI = %g\n %d\n",n, pi,size);
 
-    printf("time: %2.2f seconds\n", endTime - startTime);
+       double endTime = (float)clock() / CLOCKS_PER_SEC;
+
+        printf("time: %2.2f seconds\n", endTime - startTime);
+    }
 
     MPI_Finalize(); // cleanup
 

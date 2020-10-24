@@ -15,7 +15,7 @@
 
 #define SEED time(NULL)
 
-int main()
+int main(int argc, char *argv[])
 {
   double startTime = (float)clock() / CLOCKS_PER_SEC;
   srand(SEED);
@@ -23,7 +23,7 @@ int main()
   int i, count, n;
   double x, y, z, pi;
 
-  n = 500000000;
+  n = atoi(argv[1]);
 
   count = 0;
 
@@ -42,7 +42,7 @@ int main()
 
   pi = (double)count / n * 4;
 
-  printf("Approximate PI = %g\n", pi);
+  printf("Sequential Version with:\n n = %d\n pi =  %g\n",n, pi);
 
   double endTime = (float)clock() / CLOCKS_PER_SEC;
 

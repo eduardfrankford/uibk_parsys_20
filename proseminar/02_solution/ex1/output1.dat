@@ -1,0 +1,58 @@
+Parallel Version
+ n=500000000
+ PI = 3.14152
+ 2
+time: 25.95 seconds
+Parallel Version
+ n=500000000
+ PI = 3.14156
+ 4
+time: 13.02 seconds
+Parallel Version
+ n=500000000
+ PI = 3.14153
+ 8
+time: 6.53 seconds
+Parallel Version
+ n=500000000
+ PI = 3.14153
+ 16
+time: 3.27 seconds
+Parallel Version
+ n=500000000
+ PI = 3.1416
+ 32
+time: 1.68 seconds
+Parallel Version
+ n=50000000
+ PI = 3.14125
+ 2
+time: 2.60 seconds
+Parallel Version
+ n=50000000
+ PI = 3.14155
+ 4
+time: 1.31 seconds
+Parallel Version
+ n=50000000
+ PI = 3.14136
+ 8
+time: 0.65 seconds
+Parallel Version
+ n=50000000
+ PI = 3.14124
+ 16
+time: 0.35 seconds
+Parallel Version
+ n=50000000
+ PI = 3.14127
+ 32
+time: 0.21 seconds
+Sequential Version with:
+ n = 500000000
+ pi =  3.14154
+time: 19.79 seconds
+Sequential Version with:
+ n = 50000000
+ pi =  3.14153
+time: 2.01 seconds

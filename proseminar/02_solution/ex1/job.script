@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Execute job in the queue "std.q" unless you have special requirements.
+#$ -q std.q
+
+# The batch system should use the current directory as working directory.
+#$ -cwd
+
+# Name your job. Unless you use the -o and -e options, output will
+# go to a unique file name.ojob_id for each job.
+#$ -N pi_par
+
+#$ -o output1.dat
+# Join the error stream to the output stream.
+#$ -j no
+
+#$ -pe openmpi-fillup 32
+
+module load openmpi/4.0.3
+
+mpicc -o pi_par pi_aprox_par.c  -lm
+
+mpiexec --report-bindings -n 2 ./pi_par 500000000
+mpiexec --report-bindings -n 4 ./pi_par 500000000
+mpiexec --report-bindings -n 8 ./pi_par 500000000
+mpiexec --report-bindings -n 16 ./pi_par 500000000
+mpiexec --report-bindings -n 32 ./pi_par 500000000
+
+mpiexec --report-bindings -n 2 ./pi_par 50000000
+mpiexec --report-bindings -n 4 ./pi_par 50000000
+mpiexec --report-bindings -n 8 ./pi_par 50000000
+mpiexec --report-bindings -n 16 ./pi_par 50000000
+mpiexec --report-bindings -n 32 ./pi_par 50000000
+
+
+gcc -o pi_seq pi_aprox_seq.c -lm
+
+./pi_seq 500000000
+./pi_seq 50000000
+
