@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#$ -q std.q
+#$ -cwd
+#$ -N heat_stencil_2D_mpi_n2_c2
+#$ -o PATH
+#$ -j yes
+#$ -l excl=true
+#$ -pe openmpi-2perhost 4
+
+module load openmpi/4.0.3
+mpiexec --report-bindings --map-by core --bind-to core -n 4  PATH 1000 4096 4096 
