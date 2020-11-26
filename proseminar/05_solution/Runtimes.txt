@@ -1,0 +1,12 @@
+Execution time with N=100 and T=10000:  20.552016 s
+Execution time with N=100 and T=10000:  10.396171 s
+Execution time with N=100 and T=10000:  5.267533 s
+Execution time with N=100 and T=10000:  2.886827 s
+Execution time with N=1000 and T=100:   20.653111 s
+Execution time with N=1000 and T=100:   10.360192 s
+Execution time with N=1000 and T=100:   5.188927 s
+Execution time with N=1000 and T=100:   2.616705 s
+
+
+Obviously the increasing N has a quadratic impact on the execution time.
+Increasing T only has a linear impact.
