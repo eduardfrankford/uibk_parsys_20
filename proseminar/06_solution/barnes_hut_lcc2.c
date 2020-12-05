@@ -21,6 +21,9 @@ const double L = 1, W = 1, dt = 1e-3, alpha = 0.25, V = 50, epsilon = 1e-1, grav
 double *x, *y, *u, *v, *force_x, *force_y, *mass;
 struct node_t *root;
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
 /*
  * Function for producing a random number between two double values
  */
