@@ -29,10 +29,11 @@ module load gcc/8.2.0
 #tell OpenMP how many threads to start
 export OMP_NUM_THREADS=8
 
-./a.out 10000 100 1
-./a.out 1000 100 1
-./a.out 100 100 1
+for num_threads in `seq 1 1 8`
+do
+    for problem_size in `seq 1000 1000 10000` 
+    do
+        ./a.out $problem_size 100 $num_threads
 
-
-./a.out 100 10000 1
-./a.out 100 1000 1
+    done
+done
