@@ -18,7 +18,9 @@
 
 #$ -pe openmpi-4perhost 4
 
-#module load openmpi/4.0.3
+module load openmpi/4.0.3
 
 mpiexec --report-bindings --map-by core --bind-to socket -n 1 heat_stencil_1D_mpi 262144 1
 mpiexec --report-bindings --map-by core --bind-to socket -n 1 heat_stencil_1D_mpi 262144 4
+mpiexec --report-bindings --map-by core --bind-to socket -n 2 heat_stencil_1D_mpi 262144 1
+mpiexec --report-bindings --map-by core --bind-to socket -n 2 heat_stencil_1D_mpi 262144 4

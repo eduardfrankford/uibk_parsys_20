@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     if (rank == 0)
     {
 
-        printf("Computing heat-distribution for room size N=%d for T= %d timesteps \n", N, T);
+        // printf("Computing heat-distribution for room size N=%d for T= %d timesteps \n", N, T);
 #pragma omp parallel for
         for (int i = 0; i < N; i++)
         {
@@ -198,12 +198,12 @@ int main(int argc, char **argv)
             error_code = MPI_Gather(&A[rank * subrange], subrange, MPI_DOUBLE, A, subrange, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             handleErrorCode(error_code, rank);
 
-            if (rank == 0)
-            {
-                printf("Step t=%d:\t", t);
-                printTemperature(A, N);
-                printf("\n");
-            }
+            // if (rank == 0)
+            // {
+            //     printf("Step t=%d:\t", t);
+            //     printTemperature(A, N);
+            //     printf("\n");
+            // }
         }
 
         // show intermediate step
@@ -221,9 +221,9 @@ int main(int argc, char **argv)
     if (rank == 0)
     {
 
-        printf("Final:\t\t");
-        printTemperature(A, N);
-        printf("\n");
+        // printf("Final:\t\t");
+        // printTemperature(A, N);
+        // printf("\n");
 
         // std::cout << "Final:\t\t";
         // printTemperature(A, N);
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
         printf("Verification: %s\n", (success) ? "OK" : "FAILED");
         double endTime = omp_get_wtime();
 
-        printf("Execution time with: %2.6f s\n", endTime - startTime);
+        printf("Execution time : %2.6f s with ranks: %d and threads per rank: %d \n", endTime - startTime, numProcs, num_threads);
     }
 
     // ---------- cleanup ----------
