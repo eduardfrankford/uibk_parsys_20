@@ -20,4 +20,5 @@
 
 #module load openmpi/4.0.3
 
-mpiexec --report-bindings --map-by core -n 4 heat_stencil_1D_mpi
+mpiexec --report-bindings --map-by core --bind-to socket -n 1 heat_stencil_1D_mpi 262144 1
+mpiexec --report-bindings --map-by core --bind-to socket -n 1 heat_stencil_1D_mpi 262144 4

@@ -20,13 +20,14 @@ void printVec(Vector m, int N);
 void releaseVector(Vector m);
 
 void printTemperature(Vector m, int N);
+void handleErrorCode(int error_code, int rank);
 
 // -- simulation code ---
 
 int main(int argc, char **argv)
 {
     // 'parsing' optional input parameter = problem size
-    int N = 800000;
+    int N = 260000;
     if (argc > 1)
     {
         N = atoi(argv[1]);
@@ -41,12 +42,15 @@ int main(int argc, char **argv)
 
     omp_set_num_threads(num_threads);
 
-    int T = 10000;
+    int T = 1000;
     int rank, numProcs;
 
-    MPI_Init(&argc, &argv);
+    int provided;
+
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
 
     if (N % numProcs != 0)
     {
@@ -59,11 +63,14 @@ int main(int argc, char **argv)
     Vector A = createVector(N);
 
     // set up initial conditions in A
+    double startTime = omp_get_wtime();
+
     int source_x = N / 4;
     if (rank == 0)
     {
+
         printf("Computing heat-distribution for room size N=%d for T= %d timesteps \n", N, T);
-        #pragma omp parallel for
+#pragma omp parallel for
         for (int i = 0; i < N; i++)
         {
             A[i] = 273; // temperature is 0° C everywhere (273 K)
@@ -75,7 +82,18 @@ int main(int argc, char **argv)
         // printTemperature(A, N);
         // std::cout << std::endl;
     }
-    MPI_Bcast(A, N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    int error_code = MPI_Bcast(A, N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    if (error_code != MPI_SUCCESS)
+    {
+        char error_string[BUFSIZ];
+        int length_of_error_string, error_class;
+        MPI_Error_class(error_code, &error_class);
+        MPI_Error_string(error_class, error_string, &length_of_error_string);
+        fprintf(stderr, "%3d: %s\n", rank, error_string);
+        MPI_Error_string(error_code, error_string, &length_of_error_string);
+        fprintf(stderr, "%3d: %s\n", rank, error_string);
+        MPI_Abort(MPI_COMM_WORLD, error_code);
+    }
 
     // ---------- compute ----------
     // create a second buffer for the computation
@@ -84,7 +102,6 @@ int main(int argc, char **argv)
     // for each time step ..
     long long global_pos;
     long subrange = N / numProcs;
-    double startTime = (float)clock() / CLOCKS_PER_SEC;
     for (int t = 0; t < T; t++)
     {
         // send and receieve data from neighboors
@@ -93,36 +110,59 @@ int main(int argc, char **argv)
             // all even ranks send
             // right element
             if (rank != (numProcs - 1))
-                MPI_Send(&A[rank * subrange + subrange - 1], 1, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD);
+            {
+                error_code = MPI_Send(&A[rank * subrange + subrange - 1], 1, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD);
+                handleErrorCode(error_code, rank);
+            }
             // left element
             if (rank != 0)
-                MPI_Send(&A[rank * subrange], 1, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD);
+            {
+                error_code = MPI_Send(&A[rank * subrange], 1, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD);
+                handleErrorCode(error_code, rank);
+            }
+
             // all even ranks receieve
             //left element
             if (rank != 0)
-                MPI_Recv(&A[rank * subrange - 1], 1, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            {
+                error_code = MPI_Recv(&A[rank * subrange - 1], 1, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                handleErrorCode(error_code, rank);
+            }
+
             // right element
             if (rank != (numProcs - 1))
-                MPI_Recv(&A[rank * subrange + subrange], 1, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            {
+                error_code = MPI_Recv(&A[rank * subrange + subrange], 1, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                handleErrorCode(error_code, rank);
+            }
         }
         else
         {
             // all odd ranks receive first
             // odd rank always has left element
-            MPI_Recv(&A[rank * subrange - 1], 1, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            error_code = MPI_Recv(&A[rank * subrange - 1], 1, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            handleErrorCode(error_code, rank);
+
             // right element
             if (rank != (numProcs - 1))
-                MPI_Recv(&A[rank * subrange + subrange], 1, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            {
+                error_code = MPI_Recv(&A[rank * subrange + subrange], 1, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                handleErrorCode(error_code, rank);
+            }
             // all odd ranks send
             // right element
             if (rank != (numProcs - 1))
-                MPI_Send(&A[rank * subrange + subrange - 1], 1, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD);
+            {
+                error_code = MPI_Send(&A[rank * subrange + subrange - 1], 1, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD);
+                handleErrorCode(error_code, rank);
+            }
             // odd rank always have a left rank
-            MPI_Send(&A[rank * subrange], 1, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD);
+            error_code = MPI_Send(&A[rank * subrange], 1, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD);
+            handleErrorCode(error_code, rank);
         }
 
-        // .. we propagate the temperature
-        //#pragma omp parallel for
+// .. we propagate the temperature
+#pragma omp parallel for
         for (long long local_pos = 0; local_pos < subrange; local_pos++)
         {
             long long global_pos = rank * subrange + local_pos;
@@ -149,12 +189,15 @@ int main(int argc, char **argv)
         A = B;
         B = H;
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        error_code = MPI_Barrier(MPI_COMM_WORLD);
+        handleErrorCode(error_code, rank);
 
         // show intermediate step
         if (!(t % 1000))
         {
-            MPI_Gather(&A[rank * subrange], subrange, MPI_DOUBLE, A, subrange, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+            error_code = MPI_Gather(&A[rank * subrange], subrange, MPI_DOUBLE, A, subrange, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+            handleErrorCode(error_code, rank);
+
             if (rank == 0)
             {
                 printf("Step t=%d:\t", t);
@@ -166,7 +209,9 @@ int main(int argc, char **argv)
         // show intermediate step
     }
 
-    MPI_Gather(&A[rank * subrange], subrange, MPI_DOUBLE, A, subrange, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    error_code = MPI_Gather(&A[rank * subrange], subrange, MPI_DOUBLE, A, subrange, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    handleErrorCode(error_code, rank);
+
     double endTime = (float)clock() / CLOCKS_PER_SEC;
     releaseVector(B);
 
@@ -194,8 +239,9 @@ int main(int argc, char **argv)
         }
 
         printf("Verification: %s\n", (success) ? "OK" : "FAILED");
-        double endTime = (float)clock() / CLOCKS_PER_SEC;
-        printf("time: %2.2f seconds\n", endTime - startTime);
+        double endTime = omp_get_wtime();
+
+        printf("Execution time with: %2.6f s\n", endTime - startTime);
     }
 
     // ---------- cleanup ----------
@@ -257,4 +303,19 @@ void printTemperature(Vector m, int N)
     }
     // right wall
     printf("X");
+}
+
+void handleErrorCode(int error_code, int rank)
+{
+    if (error_code != MPI_SUCCESS)
+    {
+        char error_string[BUFSIZ];
+        int length_of_error_string, error_class;
+        MPI_Error_class(error_code, &error_class);
+        MPI_Error_string(error_class, error_string, &length_of_error_string);
+        fprintf(stderr, "%3d: %s\n", rank, error_string);
+        MPI_Error_string(error_code, error_string, &length_of_error_string);
+        fprintf(stderr, "%3d: %s\n", rank, error_string);
+        MPI_Abort(MPI_COMM_WORLD, error_code);
+    }
 }
