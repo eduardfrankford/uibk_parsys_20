@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Execute job in the queue "std.q" unless you have special requirements.
+#$ -q std.q
+
+# The batch system should use the current directory as working directory.
+#$ -cwd
+
+# Name your job. Unless you use the -o and -e options, output will
+# go to a unique file name.ojob_id for each job.
+#$ -N sheet8
+
+# Redirect output stream to this file.
+#$ -o sheet8.dat
+
+# Join the error stream to the output stream.
+#$ -j yes
+
+# Use the parallel environment "openmp" with 8 job slots. Each requested
+# job slot will be assigned one core on the execution host.
+#$ -pe openmp 8
+
+
+#$ -l h_vmem=2G
+
+
+## Use gcc 8.2.0 as the default gcc
+module load gcc/8.2.0
+
+#tell OpenMP how many threads to start
+export OMP_NUM_THREADS=8
+
+
+./mat_mul 100 1
+./mat_mul 100 2
+./mat_mul 100 4
+./mat_mul 100 8
+
+./mat_mul 500 1
+./mat_mul 500 2
+./mat_mul 500 4
+./mat_mul 500 8
+
+./mat_mul 1000 1
+./mat_mul 1000 2
+./mat_mul 1000 4
+./mat_mul 1000 8
+
+./mat_mul 2000 1
+./mat_mul 2000 2
+./mat_mul 2000 4
+./mat_mul 2000 8
+
+./mat_mul 3000 1
+./mat_mul 3000 8
+
+./n_queens_seq 8
+./n_queens_par 8 2
+./n_queens_par 8 4
+./n_queens_par 8 8
+
+./n_queens_seq 10
+./n_queens_par 10 2
+./n_queens_par 10 4
+./n_queens_par 10 8
+
+./n_queens_seq 12
+./n_queens_par 12 2
+./n_queens_par 12 4
+./n_queens_par 12 8
+
+./n_queens_seq 13
+./n_queens_par 13 8
+
